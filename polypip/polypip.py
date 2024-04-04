@@ -4,51 +4,53 @@ import re
 from collections import defaultdict
 
 def find_python_files(path):
-    """Recursively find all Python script files in path."""
     for dirpath, dirnames, filenames in os.walk(path):
         for filename in filenames:
-            if filename.endswith('.py'):
+            if filename.endswith('.py') or filename.endswith('.pyw'):
                 yield os.path.join(dirpath, filename)
 
-def extract_imports(path):
-    """Extract import statements from a Python script file."""
+def get_imports_from_file(path):
     with open(path, 'r', encoding='utf-8') as file:
         content = file.read()
     return re.findall(r'^import (\S+)|^from (\S+) import', content, re.MULTILINE)
 
-def normalize_package_name(package):
-    """Simplistic normalization of package names."""
-    # This can be replaced with a more sophisticated normalization or resolution process.
-    return package.split('.')[0]
-
-def generate_requirements(directory):
-    """Generate a requirements.txt file from Python files in the given directory."""
-    imports = defaultdict(int)
-    for file_path in find_python_files(directory):
-        for imp in extract_imports(file_path):
-            package = imp[0] or imp[1]
-            normalized_package = normalize_package_name(package)
-            imports[normalized_package] += 1
-
+def generate_requirements_file(imports):
     with open('requirements.txt', 'w', encoding='utf-8') as req_file:
         for package in sorted(imports.keys()):
             req_file.write(f"{package}\n")
 
+def gather_imports(files):
+    imports = defaultdict(int)
+    for file_path in files:
+        for imp in get_imports_from_file(file_path):
+            package = imp[0] or imp[1]
+            imports[package] += 1
+    return imports
+
+def normalize_imports(imports):
+    normalized_imports = defaultdict(int)
+    for package, count in imports.items():
+        normalized_package = package.split('.')[0]
+        normalized_imports[normalized_package] += count
+    return normalized_imports
+
+def driver(args):
+    path = args.path
+    if path is None:
+        path = os.path.abspath(os.curdir)
+    files = find_python_files(path)
+    imports = gather_imports(files)
+    normalized_imports = normalize_imports(imports)
+    generate_requirements_file(normalized_imports)
+
+
 def main():
-    
     parser = argparse.ArgumentParser(prog='polypip')
-    parser.add_argument('path')
+    parser.add_argument('--path')
     
     args = parser.parse_args()
 
-    if os.path.isdir(args.path):
-        generate_requirements(args.path)
-        print("requirements.txt has been generated.")
-    elif os.path.isfile(args.path) and args.path.endswith('.py'):
-        generate_requirements(os.path.dirname(args.path))
-        print("requirements.txt has been generated for the single Python file.")
-    else:
-        print("Please provide a valid Python file or directory.")
+    driver(args)
 
 if __name__ == "__main__":
     main()
