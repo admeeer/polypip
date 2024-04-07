@@ -36,18 +36,23 @@ def normalize_imports(imports):
 
 def driver(args):
     path = args.path
+
     if path is None:
         path = os.path.abspath(os.curdir)
-    files = find_python_files(path)
+
+    if os.path.isfile(path):
+        files = [path]
+    else:
+        files = find_python_files(path)
+    
     imports = gather_imports(files)
     normalized_imports = normalize_imports(imports)
     generate_requirements_file(normalized_imports)
 
-
 def main():
     parser = argparse.ArgumentParser(prog='polypip')
     parser.add_argument('--path')
-    
+
     args = parser.parse_args()
 
     driver(args)
