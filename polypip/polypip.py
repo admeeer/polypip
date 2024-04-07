@@ -14,8 +14,8 @@ def get_imports_from_file(path):
         content = file.read()
     return re.findall(r'^import (\S+)|^from (\S+) import', content, re.MULTILINE)
 
-def generate_requirements_file(imports):
-    with open('requirements.txt', 'w', encoding='utf-8') as req_file:
+def generate_requirements_file(path, imports):
+    with open(path, 'w', encoding='utf-8') as req_file:
         for package in sorted(imports.keys()):
             req_file.write(f"{package}\n")
 
@@ -35,23 +35,36 @@ def normalize_imports(imports):
     return normalized_imports
 
 def driver(args):
-    path = args.path
+    
+    input_path = args.path
 
-    if path is None:
-        path = os.path.abspath(os.curdir)
+    if input_path is None:
+        input_path = os.path.abspath(os.curdir)
 
-    if os.path.isfile(path):
-        files = [path]
+    if os.path.isfile(input_path):
+        
+        files = [input_path]
+        
+        save_path = os.path.join(os.path.dirname(input_path), 'requirements.txt')
+
     else:
-        files = find_python_files(path)
+
+        files = find_python_files(input_path)
+
+        save_path = os.path.join(input_path, 'requirements.txt')
+
+    if not args.force and os.path.exists(save_path):
+        print('requirements.txt already exists. Use --force to overwrite.')
+        return
     
     imports = gather_imports(files)
     normalized_imports = normalize_imports(imports)
-    generate_requirements_file(normalized_imports)
+    generate_requirements_file(save_path, normalized_imports)
 
 def main():
     parser = argparse.ArgumentParser(prog='polypip')
     parser.add_argument('--path')
+    parser.add_argument('--force', action='store_true')
 
     args = parser.parse_args()
 
