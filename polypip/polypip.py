@@ -2,6 +2,7 @@ import argparse
 import os
 import re
 from collections import defaultdict
+import ast
 
 def find_python_files(path):
     for dirpath, dirnames, filenames in os.walk(path):
@@ -9,10 +10,21 @@ def find_python_files(path):
             if filename.endswith('.py') or filename.endswith('.pyw'):
                 yield os.path.join(dirpath, filename)
 
-def get_imports_from_file(path):
+'''def get_imports_from_file(path):
     with open(path, 'r', encoding='utf-8') as file:
         content = file.read()
     return re.findall(r'^import (\S+)|^from (\S+) import', content, re.MULTILINE)
+    Old code. Do not know if we want to keep this or not
+    '''
+
+# Changed to incorporate AST parsing. Parsing the AST is more reliable than using regex. In addition if an import is there and not commented out, it will be picked up by the AST parser.
+def get_imports_from_file(path):
+    with open(path, 'r', encoding='utf-8') as file:
+        content = file.read()
+    tree = ast.parse(content)
+    imports = [(node.names[0].name,) for node in ast.walk(tree) if isinstance(node, ast.Import)]
+    from_imports = [(node.module,) for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)]
+    return imports + from_imports
 
 def generate_requirements_file(imports):
     with open('requirements.txt', 'w', encoding='utf-8') as req_file:
