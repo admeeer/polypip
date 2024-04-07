@@ -3,7 +3,7 @@ import os
 import re
 from collections import defaultdict
 import ast
-import warnings
+import logging
 
 def find_python_files(path):
     for dirpath, dirnames, filenames in os.walk(path):
@@ -21,7 +21,7 @@ def get_imports_from_file(path):
     from_imports = [(node.module,) for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)]
     all_imports = imports + from_imports
     if not all_imports:
-        warnings.warn(f"No imports found in {path}")
+        logging.warning(f"No imports found in {path}")
     return all_imports
 
 def generate_requirements_file(imports):
