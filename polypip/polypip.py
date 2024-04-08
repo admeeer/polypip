@@ -100,7 +100,7 @@ def main():
     parser = argparse.ArgumentParser(prog='polypip')
 
     parser.add_argument('--path', '--p', help='path to the directory or file to scan for imports')
-    parser.add_argument('--compare', '--c', help='path to a requirements.txt file to compare against')
+    parser.add_argument('--reference', '--r', help='path to a requirements.txt file to reference versions from')
     parser.add_argument('--overwrite', '--o', action='store_true', help='overwrite requirements.txt if it already exists')
     parser.add_argument('--shallow', '--s', action='store_false', help='do not search recursively')
 
