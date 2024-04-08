@@ -5,23 +5,40 @@ from collections import defaultdict
 import ast
 import logging
 
-def find_python_files(path):
-    for dirpath, dirnames, filenames in os.walk(path):
-        for filename in filenames:
-            if filename.endswith('.py') or filename.endswith('.pyw'):
-                yield os.path.join(dirpath, filename)
+def find_python_files(path, recursion=True):
+    if recursion:
+        
+        for dirpath, dirnames, filenames in os.walk(path):
+            for filename in filenames:
+                if filename.endswith('.py') or filename.endswith('.pyw'):
+                    yield os.path.join(dirpath, filename)
+    else:
+        # os.listdir() returns both files and directories, hence the os.path.isfile check
+        for filename in os.listdir(path):
+            abs_path = os.path.join(path, filename)
+            if os.path.isfile(abs_path) and (filename.endswith('.py') or filename.endswith('.pyw')):
+                yield abs_path
 
 
 # Changed to incorporate AST parsing. Parsing the AST is more reliable than using regex. In addition if an import is there and not commented out, it will be picked up by the AST parser.
 def get_imports_from_file(path):
+    
     with open(path, 'r', encoding='utf-8') as file:
-        content = file.read()
-    tree = ast.parse(content)
-    imports = [(node.names[0].name,) for node in ast.walk(tree) if isinstance(node, ast.Import)]
-    from_imports = [(node.module,) for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)]
-    all_imports = imports + from_imports
+        code = file.read()
+
+    tree = ast.parse(code)
+
+    all_imports = []
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            all_imports.extend([(name.name, name.asname) for name in node.names])
+        elif isinstance(node, ast.ImportFrom):
+            all_imports.extend([(node.module, name.asname) for name in node.names])
+
     if not all_imports:
         logging.warning(f"No imports found in {path}")
+
     return all_imports
 
 def generate_requirements_file(path, imports):
@@ -59,12 +76,12 @@ def driver(args):
 
     else:
 
-        files = find_python_files(input_path)
+        files = find_python_files(path=input_path, recursion=args.shallow)
 
         save_path = os.path.join(input_path, 'requirements.txt')
 
-    if not args.force and os.path.exists(save_path):
-        print('requirements.txt already exists. Use --force to overwrite.')
+    if not args.overwrite and os.path.exists(save_path):
+        print('requirements.txt already exists. Use --o or --overwrite to overwrite.')
         return
     
     imports = gather_imports(files)
@@ -74,7 +91,8 @@ def driver(args):
 def main():
     parser = argparse.ArgumentParser(prog='polypip')
     parser.add_argument('--path')
-    parser.add_argument('--force', action='store_true')
+    parser.add_argument('--overwrite', '--o', action='store_true')
+    parser.add_argument('--shallow', '--s', action='store_false')
 
     args = parser.parse_args()
 
