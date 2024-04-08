@@ -44,23 +44,43 @@ def get_imports_from_file(path):
 def generate_requirements_file(path, imports):
     with open(path, 'w', encoding='utf-8') as req_file:
         for package in sorted(imports.keys()):
-            req_file.write(f"{package}\n")
+            if imports[package][0] and imports[package][1]:
+                req_file.write(f"{package}{imports[package][0]}{imports[package][1]}\n")
+            else:
+                req_file.write(f"{package}\n")
 
-def gather_imports(files):
-    imports = defaultdict(int)
+def get_all_imports(files):
+    imports = set()
     for file_path in files:
         for imp in get_imports_from_file(file_path):
             package = imp[0] or imp[1]
-            imports[package] += 1
+            package = package.split('.')[0]
+            imports.add(package)
     return imports
 
-def normalize_imports(imports):
-    normalized_imports = defaultdict(int)
-    for package, count in imports.items():
-        normalized_package = package.split('.')[0]
-        normalized_imports[normalized_package] += count
-    return normalized_imports
+def parse_requirements_file(path):
+    with open(path, 'r', encoding='utf-8') as requirements_file:
+        imports = {}
 
+        regex = re.compile(r"([^=<>~!]+)(==|>=|<=|!=|~=|>|<)?(\d+(?:\.\d+)*(?:\.\d+)?)?")
+
+        for line in requirements_file:
+            
+            if line.strip() == "" or line.strip().startswith('#'):
+                continue
+
+            match = regex.match(line.strip())
+
+            if match:
+                name, symbol, version = match.groups()
+
+                imports[name.strip()] = (symbol if symbol else None, version if version else None)
+            
+        if not imports:
+            logging.warning(f"parsed reference requirements file but no imports found!")
+
+        return imports
+    
 # The module should provide an option for the user to input a requirements file and parse the 
 #dependencies in that file. If a dependency is detected that is also inside the input file that has a 
 # version specified, then the detected dependency is set to that version instead.
@@ -88,12 +108,37 @@ def driver(args):
         save_path = os.path.join(input_path, 'requirements.txt')
 
     if not args.overwrite and os.path.exists(save_path):
-        print('requirements.txt already exists. Use --o or --overwrite to overwrite.')
-        return
+        logging.error('requirements.txt already exists. Use --o or --overwrite to overwrite.')
+        return        
     
-    imports = gather_imports(files)
-    normalized_imports = normalize_imports(imports)
-    generate_requirements_file(save_path, normalized_imports)
+    imports = get_all_imports(files)
+
+    final_imports = {}
+
+    if args.reference:
+    
+        if os.path.exists(args.reference):
+            
+            reference_imports = parse_requirements_file(args.reference)
+
+            for imp in imports:
+                if imp in reference_imports:
+                    symbol, version = reference_imports[imp]
+                else:
+                    symbol, version = None, None
+                
+                final_imports[imp] = (symbol, version)
+
+
+        else:
+            logging.error(f"couldn't find file {args.reference}")
+            return
+    
+    else:
+        
+        final_imports = {imp: imp for imp in imports}
+    
+    generate_requirements_file(save_path, final_imports)
 
 def main():
     
