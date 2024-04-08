@@ -75,6 +75,7 @@ def parse_requirements_file(path):
 
             if match:
                 name, symbol, version = match.groups()
+
                 imports[name.strip()] = (symbol if symbol else None, version if version else None)
             
         if not imports:
