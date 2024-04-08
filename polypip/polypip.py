@@ -60,6 +60,7 @@ def get_all_imports(files):
 
 def parse_requirements_file(path):
     with open(path, 'r', encoding='utf-8') as requirements_file:
+        
         imports = {}
 
         regex = re.compile(r"([^=<>~!]+)(==|>=|<=|!=|~=|>|<)?(\d+(?:\.\d+)*(?:\.\d+)?)?")
