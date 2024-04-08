@@ -10,11 +10,10 @@ import sys
 # This is to get standard libraries in Python. This is used to filter out standard libraries from the imports and any values in stdlib.txt.
 # This is taken from pipreqs and is used to filter out standard libraries from the imports that sys.builtin_module_names does not catch.
 def get_standard_libs():
-    standard_libs = set(tuple([lib]) for lib in sys.builtin_module_names)
     with open(os.path.join("stdlib.txt"), "r") as f:
         data = {x.strip() for x in f}
     data = set(tuple([lib]) for lib in data)
-    return standard_libs.union(data)
+    return data
 
 
 

@@ -1783,3 +1783,7 @@ zoneinfo
 zoneinfo._common
 zoneinfo._tzpath
 zoneinfo._zoneinfo
+_winapi
+_typing
+nt
+_tokenize
