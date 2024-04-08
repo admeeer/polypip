@@ -4,6 +4,17 @@ import re
 from collections import defaultdict
 import ast
 import logging
+import sys
+
+# This is to get standard libraries in Python. This is used to filter out standard libraries from the imports and any values in stdlib.txt.
+# This is taken from pipreqs and is used to filter out standard libraries from the imports that sys.builtin_module_names does not catch.
+def get_standard_libs():
+    standard_libs = set(tuple([lib]) for lib in sys.builtin_module_names)
+    with open(os.path.join("stdlib.txt"), "r") as f:
+        data = {x.strip() for x in f}
+    data = set(tuple([lib]) for lib in data)
+    return standard_libs.union(data)
+
 
 def find_python_files(path):
     for dirpath, dirnames, filenames in os.walk(path):
@@ -20,6 +31,8 @@ def get_imports_from_file(path):
     imports = [(node.names[0].name,) for node in ast.walk(tree) if isinstance(node, ast.Import)]
     from_imports = [(node.module,) for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)]
     all_imports = imports + from_imports
+    logging.info(f"Imports found in {path}: {all_imports}")
+    all_imports = [imp for imp in all_imports if imp not in get_standard_libs()]
     if not all_imports:
         logging.warning(f"No imports found in {path}")
     return all_imports
