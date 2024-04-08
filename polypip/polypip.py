@@ -42,9 +42,9 @@ def get_imports_from_file(path):
 
 def generate_requirements_file(path, imports):
     with open(path, 'w', encoding='utf-8') as req_file:
-        for package in sorted(imports.keys()):
-            if imports[package][0] and imports[package][1]:
-                req_file.write(f"{package}{imports[package][0]}{imports[package][1]}\n")
+        for package, (symbol, version) in sorted(imports.items()):
+            if symbol and version:
+                req_file.write(f"{package}{symbol}{version}\n")
             else:
                 req_file.write(f"{package}\n")
 
@@ -63,7 +63,6 @@ def parse_requirements_file(path):
     with open(path, 'r', encoding='utf-8') as requirements_file:
         
         imports = {}
-
         regex = re.compile(r"([^=<>~!]+)(==|>=|<=|!=|~=|>|<)?(\d+(?:\.\d+)*(?:\.\d+)?)?")
 
         for line in requirements_file:
@@ -75,7 +74,6 @@ def parse_requirements_file(path):
 
             if match:
                 name, symbol, version = match.groups()
-
                 imports[name.strip()] = (symbol if symbol else None, version if version else None)
             
         if not imports:
@@ -137,8 +135,15 @@ def driver(args):
     else:
         
         final_imports = {imp: imp for imp in imports}
-    
-    generate_requirements_file(save_path, final_imports)
+
+    if not args.dry_run:
+        generate_requirements_file(save_path, final_imports)
+    else:
+        for package, (symbol, version) in sorted(final_imports.items()):
+            if symbol and version:
+                logging.info(f"\t{package}{symbol}{version}")
+            else:
+                logging.info(f"\t{package}")
 
 
 def main():
@@ -149,6 +154,7 @@ def main():
     parser.add_argument('--reference', '--r', help='path to a requirements.txt file to reference versions from')
     parser.add_argument('--overwrite', '--o', action='store_true', help='overwrite requirements.txt if it already exists')
     parser.add_argument('--shallow', '--s', action='store_false', help='do not search recursively')
+    parser.add_argument('--dry-run', action='store_true', help='preview the requirements.txt that would be generated')
 
     group = parser.add_mutually_exclusive_group()
 
