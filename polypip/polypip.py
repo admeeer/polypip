@@ -80,10 +80,6 @@ def parse_requirements_file(path):
             logging.warning(f"parsed reference requirements file but no imports found!")
 
         return imports
-    
-# The module should provide an option for the user to input a requirements file and parse the 
-#dependencies in that file. If a dependency is detected that is also inside the input file that has a 
-# version specified, then the detected dependency is set to that version instead.
 
 def driver(args):
     
