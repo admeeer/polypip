@@ -61,6 +61,10 @@ def normalize_imports(imports):
         normalized_imports[normalized_package] += count
     return normalized_imports
 
+# The module should provide an option for the user to input a requirements file and parse the 
+#dependencies in that file. If a dependency is detected that is also inside the input file that has a 
+# version specified, then the detected dependency is set to that version instead.
+
 def driver(args):
     
     input_path = args.path
@@ -69,6 +73,9 @@ def driver(args):
         input_path = os.path.abspath(os.curdir)
 
     if os.path.isfile(input_path):
+        
+        if args.shallow:
+            logging.info('used --shallow but input is a single file. ignoring.')
         
         files = [input_path]
         
@@ -89,12 +96,29 @@ def driver(args):
     generate_requirements_file(save_path, normalized_imports)
 
 def main():
+    
     parser = argparse.ArgumentParser(prog='polypip')
-    parser.add_argument('--path')
-    parser.add_argument('--overwrite', '--o', action='store_true')
-    parser.add_argument('--shallow', '--s', action='store_false')
+
+    parser.add_argument('--path', '--p', help='path to the directory or file to scan for imports')
+    parser.add_argument('--compare', '--c', help='path to a requirements.txt file to compare against')
+    parser.add_argument('--overwrite', '--o', action='store_true', help='overwrite requirements.txt if it already exists')
+    parser.add_argument('--shallow', '--s', action='store_false', help='do not search recursively')
+
+    group = parser.add_mutually_exclusive_group()
+
+    group.add_argument('--quiet', action='store_true', help='enable quiet mode')
+    group.add_argument('--verbose', action='store_true', help='enable verbose mode')
 
     args = parser.parse_args()
+
+    log_level = logging.INFO
+
+    if args.quiet:
+        log_level = logging.WARNING
+    elif args.verbose:
+        log_level = logging.DEBUG
+
+    logging.basicConfig(level=log_level, format='%(levelname)s: %(message)s')
 
     driver(args)
 
