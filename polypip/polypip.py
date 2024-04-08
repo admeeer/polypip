@@ -7,7 +7,6 @@ import logging
 
 def find_python_files(path, recursion=True):
     if recursion:
-        
         for dirpath, dirnames, filenames in os.walk(path):
             for filename in filenames:
                 if filename.endswith('.py') or filename.endswith('.pyw'):
@@ -20,9 +19,8 @@ def find_python_files(path, recursion=True):
                 yield abs_path
 
 
-# Changed to incorporate AST parsing. Parsing the AST is more reliable than using regex. In addition if an import is there and not commented out, it will be picked up by the AST parser.
+# parse files using ast
 def get_imports_from_file(path):
-    
     with open(path, 'r', encoding='utf-8') as file:
         code = file.read()
 
@@ -41,6 +39,7 @@ def get_imports_from_file(path):
 
     return all_imports
 
+
 def generate_requirements_file(path, imports):
     with open(path, 'w', encoding='utf-8') as req_file:
         for package in sorted(imports.keys()):
@@ -48,6 +47,7 @@ def generate_requirements_file(path, imports):
                 req_file.write(f"{package}{imports[package][0]}{imports[package][1]}\n")
             else:
                 req_file.write(f"{package}\n")
+
 
 def get_all_imports(files):
     imports = set()
@@ -58,6 +58,7 @@ def get_all_imports(files):
             imports.add(package)
     return imports
 
+
 def parse_requirements_file(path):
     with open(path, 'r', encoding='utf-8') as requirements_file:
         
@@ -66,7 +67,7 @@ def parse_requirements_file(path):
         regex = re.compile(r"([^=<>~!]+)(==|>=|<=|!=|~=|>|<)?(\d+(?:\.\d+)*(?:\.\d+)?)?")
 
         for line in requirements_file:
-            
+
             if line.strip() == "" or line.strip().startswith('#'):
                 continue
 
@@ -74,7 +75,6 @@ def parse_requirements_file(path):
 
             if match:
                 name, symbol, version = match.groups()
-
                 imports[name.strip()] = (symbol if symbol else None, version if version else None)
             
         if not imports:
@@ -82,11 +82,13 @@ def parse_requirements_file(path):
 
         return imports
 
+
 def driver(args):
     
     input_path = args.path
 
     if input_path is None:
+        
         input_path = os.path.abspath(os.curdir)
 
     if os.path.isfile(input_path):
@@ -95,7 +97,7 @@ def driver(args):
             logging.info('used --shallow but input is a single file. ignoring.')
         
         files = [input_path]
-        
+
         save_path = os.path.join(os.path.dirname(input_path), 'requirements.txt')
 
     else:
@@ -136,6 +138,7 @@ def driver(args):
         final_imports = {imp: imp for imp in imports}
     
     generate_requirements_file(save_path, final_imports)
+
 
 def main():
     
