@@ -1,11 +1,8 @@
 import argparse
 import os
-import re
 from collections import defaultdict
 import ast
 import logging
-
-import sys
 
 # This is to get standard libraries in Python. This is used to filter out standard libraries from the imports and any values in stdlib.txt.
 # This is taken from pipreqs and is used to filter out standard libraries from the imports that sys.builtin_module_names does not catch.
@@ -21,6 +18,7 @@ def find_python_files(path):
     for dirpath, dirnames, filenames in os.walk(path):
         for filename in filenames:
             if filename.endswith('.py') or filename.endswith('.pyw'):
+                
                 yield os.path.join(dirpath, filename)
 
 
