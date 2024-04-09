@@ -158,16 +158,16 @@ def main():
     
     parser = argparse.ArgumentParser(prog='polypip')
 
-    parser.add_argument('--path', '--p', help='path to the directory or file to scan for imports')
+    parser.add_argument('--path', '--p', help='path to the directory or file to scan for imports)')
     parser.add_argument('--reference', '--r', help='path to a requirements.txt file to reference versions from')
     parser.add_argument('--overwrite', '--o', action='store_true', help='overwrite requirements.txt if it already exists')
-    parser.add_argument('--shallow', '--s', action='store_false', help='do not search recursively')
+    parser.add_argument('--shallow', '--s', action='store_false', help='do not search for imports recursively')
     parser.add_argument('--dry-run', action='store_true', help='preview the requirements.txt that would be generated')
 
     group = parser.add_mutually_exclusive_group()
 
-    group.add_argument('--quiet', action='store_true', help='enable quiet mode')
-    group.add_argument('--verbose', action='store_true', help='enable verbose mode')
+    group.add_argument('--quiet', '--q', action='store_true', help='enable quiet mode')
+    group.add_argument('--verbose', '--v', action='store_true', help='enable verbose mode')
 
     args = parser.parse_args()
 
