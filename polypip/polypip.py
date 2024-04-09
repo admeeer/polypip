@@ -49,6 +49,12 @@ def generate_requirements_file(path, imports):
                 req_file.write(f"{package}\n")
 
 
+def get_standard_libraries():
+    with open("stdlib", "r") as f:
+        stdlibs = {line.strip() for line in f}
+    return stdlibs
+
+
 def get_all_imports(files):
     imports = set()
     for file_path in files:
@@ -110,6 +116,8 @@ def driver(args):
         return        
     
     imports = get_all_imports(files)
+
+    imports = imports - get_standard_libraries()
 
     final_imports = {}
 
