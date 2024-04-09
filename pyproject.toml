@@ -1,0 +1,15 @@
+[project]
+name = "polypip"
+version = "0.1.0"
+authors = [
+    { name="Alexander Crayton", email="" },
+    { name="Parker Spaan", email="" },1
+]
+repository="https://github.com/admeeer/polypip"
+description=""
+readme = "README.md"
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3"
+]
