@@ -142,7 +142,7 @@ def driver(args):
     
     else:
         
-        final_imports = {imp: imp for imp in imports}
+        final_imports = {imp: (None, None) for imp in imports}
 
     if not args.dry_run:
         generate_requirements_file(save_path, final_imports)
