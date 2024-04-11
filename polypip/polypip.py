@@ -1,7 +1,6 @@
 import argparse
 import os
 import re
-from collections import defaultdict
 import ast
 import logging
 
