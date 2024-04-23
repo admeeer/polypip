@@ -1,6 +1,6 @@
 [project]
 name = "polypip"
-version = "0.1.0"
+version = "0.0.1"
 authors = [
     { name="Alexander Crayton", email="alexppeltier@gmail.com"},
     { name="Parker Spaan", email="parkerspaan@yahoo.com"},
