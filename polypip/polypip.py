@@ -32,7 +32,7 @@ def generate_requirements_file(path, imports):
                 req_file.write(f"{package}\n")
 
 def _get_standard_libraries():
-    with open("stdlib", "r") as f:
+    with open("polypip/stdlib", "r") as f:
         stdlibs = {line.strip() for line in f}
     return stdlibs
 

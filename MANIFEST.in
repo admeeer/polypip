@@ -1,0 +1,3 @@
+include polypip/polypip.py
+include polypip/stdlib
+prune polypip/tests
