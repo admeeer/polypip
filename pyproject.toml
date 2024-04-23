@@ -10,7 +10,7 @@ authors = [
     { name="Alexander Crayton", email="alexppeltier@gmail.com"},
     { name="Parker Spaan", email="parkerspaan@yahoo.com"},
 ]
-packages = [{include = "pipreqs"}]
+packages = [{include = "polypip"}]
 requires-python=">=3.9"
 readme = "README.md"
 license = {file = "LICENSE"}
