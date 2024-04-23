@@ -118,8 +118,11 @@ def driver(args):
         save_path = os.path.join(input_path, 'requirements.txt')
 
     if not args.overwrite and os.path.exists(save_path):
-        logging.error('requirements.txt already exists. Use --o or --overwrite to overwrite.')
-        return        
+        if args.dry_run:
+            logging.info(f"dry run: requirements.txt already exists. Use --o or --overwrite to overwrite. continuing...")
+        else:
+            logging.error('requirements.txt already exists. Use --o or --overwrite to overwrite.')
+            return 
     
     imports = get_external_imports(input_path, recursion=args.shallow)
 
