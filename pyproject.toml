@@ -5,7 +5,6 @@ authors = [
     { name="Alexander Crayton", email="alexppeltier@gmail.com"},
     { name="Parker Spaan", email="parkerspaan@yahoo.com"},
 ]
-repository="https://github.com/admeeer/polypip"
 description="A lightweight python module designed to generate a requirements file for your project."
 requires-python=">=3.9"
 readme = "README.md"
@@ -19,3 +18,6 @@ classifiers = [
 
 [project.scripts]
 polypip = "polypip.polypip:main"
+
+[project.urls]
+repository="https://github.com/admeeer/polypip"
