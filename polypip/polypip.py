@@ -4,22 +4,7 @@ import re
 import ast
 import logging
 
-def find_python_files(path, recursion=True):
-    if recursion:
-        for dirpath, dirnames, filenames in os.walk(path):
-            for filename in filenames:
-                if filename.endswith('.py') or filename.endswith('.pyw'):
-                    yield os.path.join(dirpath, filename)
-    else:
-        # os.listdir() returns both files and directories, hence the os.path.isfile check
-        for filename in os.listdir(path):
-            abs_path = os.path.join(path, filename)
-            if os.path.isfile(abs_path) and (filename.endswith('.py') or filename.endswith('.pyw')):
-                yield abs_path
-
-
-# parse files using ast
-def get_imports_from_file(path):
+def get_imports_from_file(path): # parse imports from a python script file using ast
     with open(path, 'r', encoding='utf-8') as file:
         code = file.read()
 
@@ -34,10 +19,9 @@ def get_imports_from_file(path):
             all_imports.extend([(node.module, name.asname) for name in node.names])
 
     if not all_imports:
-        logging.warning(f"No imports found in {path}")
+        logging.info(f"no imports found in file {path}")
 
     return all_imports
-
 
 def generate_requirements_file(path, imports):
     with open(path, 'w', encoding='utf-8') as req_file:
@@ -47,22 +31,49 @@ def generate_requirements_file(path, imports):
             else:
                 req_file.write(f"{package}\n")
 
-
-def get_standard_libraries():
+def _get_standard_libraries():
     with open("stdlib", "r") as f:
         stdlibs = {line.strip() for line in f}
     return stdlibs
 
+def get_external_imports(path, recursion=True):
+    python_files = []
+    local_modules = set()
 
-def get_all_imports(files):
-    imports = set()
-    for file_path in files:
-        for imp in get_imports_from_file(file_path):
+    path_is_file = False
+    if os.path.isfile(path):
+        python_files.append(path)
+        path_is_file = True
+    
+    if not path_is_file:
+        if recursion:
+            for root, dirs, files in os.walk(path):
+                local_modules.add(os.path.basename(root))
+                for filename in files:
+                    if filename.endswith('.py') or filename.endswith('.pyw'):
+                        python_files.append(os.path.join(root, filename))
+        else:
+            for filename in os.listdir(path):
+                abs_path = os.path.join(path, filename)
+                if os.path.isdir(abs_path):
+                    local_modules.add(os.path.basename(abs_path))
+                if os.path.isfile(abs_path) and (filename.endswith('.py') or filename.endswith('.pyw')):
+                    python_files.append(abs_path)
+    
+    raw_imports = set()
+    for file_path in python_files:
+        file_imports = get_imports_from_file(file_path)
+        local_modules.add(os.path.splitext(os.path.basename(file_path))[0])
+        for imp in file_imports:
             package = imp[0] or imp[1]
             package = package.split('.')[0]
-            imports.add(package)
-    return imports
+            raw_imports.add(package)
+    logging.info(f"found {len(local_modules)} local modules: {local_modules}")
+    logging.info(f"found {len(raw_imports)} raw imports: {raw_imports}")
 
+    external_imports = raw_imports - local_modules  # Remove local modules
+    external_imports -= _get_standard_libraries()  # Remove stdlibs
+    return external_imports
 
 def parse_requirements_file(path):
     with open(path, 'r', encoding='utf-8') as requirements_file:
@@ -84,8 +95,8 @@ def parse_requirements_file(path):
         if not imports:
             logging.warning(f"parsed reference requirements file but no imports found!")
 
+        logging.info(f"parsed reference requirements file {path} with {len(imports)} imports, {list(imports.keys())}...")
         return imports
-
 
 def driver(args):
     
@@ -98,15 +109,11 @@ def driver(args):
     if os.path.isfile(input_path):
         
         if args.shallow:
-            logging.info('used --shallow but input is a single file. ignoring.')
-        
-        files = [input_path]
+            logging.info('specified --shallow but input is a single file, did you mean to do this? ignoring.')
 
         save_path = os.path.join(os.path.dirname(input_path), 'requirements.txt')
 
     else:
-
-        files = find_python_files(path=input_path, recursion=args.shallow)
 
         save_path = os.path.join(input_path, 'requirements.txt')
 
@@ -114,9 +121,7 @@ def driver(args):
         logging.error('requirements.txt already exists. Use --o or --overwrite to overwrite.')
         return        
     
-    imports = get_all_imports(files)
-
-    imports = imports - get_standard_libraries()
+    imports = get_external_imports(input_path, recursion=args.shallow)
 
     final_imports = {}
 
@@ -160,7 +165,7 @@ def main():
     parser.add_argument('--path', '--p', help='path to the directory or file to scan for imports)')
     parser.add_argument('--reference', '--r', help='path to a requirements.txt file to reference versions from')
     parser.add_argument('--overwrite', '--o', action='store_true', help='overwrite requirements.txt if it already exists')
-    parser.add_argument('--shallow', '--s', action='store_false', help='do not search for imports recursively')
+    parser.add_argument('--shallow', '--s', action='store_false', help='do not search for python files recursively')
     parser.add_argument('--dry-run', action='store_true', help='preview the requirements.txt that would be generated')
 
     group = parser.add_mutually_exclusive_group()
