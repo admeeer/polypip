@@ -19,7 +19,7 @@ def get_imports_from_file(path): # parse imports from a python script file using
             all_imports.extend([(node.module, name.asname) for name in node.names])
 
     if not all_imports:
-        logging.info(f"no imports found in file {path}")
+        logging.debug(f"no imports found in file {path}")
 
     return all_imports
 
@@ -68,8 +68,8 @@ def get_external_imports(path, recursion=True):
             package = imp[0] or imp[1]
             package = package.split('.')[0]
             raw_imports.add(package)
-    logging.info(f"found {len(local_modules)} local modules: {local_modules}")
-    logging.info(f"found {len(raw_imports)} raw imports: {raw_imports}")
+    logging.debug(f"found {len(local_modules)} local modules: {local_modules}")
+    logging.debug(f"found {len(raw_imports)} raw imports: {raw_imports}")
 
     external_imports = raw_imports - local_modules  # Remove local modules
     external_imports -= _get_standard_libraries()  # Remove stdlibs
@@ -95,7 +95,7 @@ def parse_requirements_file(path):
         if not imports:
             logging.warning(f"parsed reference requirements file but no imports found!")
 
-        logging.info(f"parsed reference requirements file {path} with {len(imports)} imports, {list(imports.keys())}...")
+        logging.debug(f"parsed reference requirements file {path} with {len(imports)} imports, {list(imports.keys())}...")
         return imports
 
 def driver(args):
