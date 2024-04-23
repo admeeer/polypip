@@ -9,6 +9,7 @@ repository="https://github.com/admeeer/polypip"
 description="A lightweight python module designed to generate a requirements file for your project."
 requires-python=">=3.9"
 readme = "README.md"
+license = {file = "LICENSE"}
 classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
