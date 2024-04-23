@@ -151,6 +151,7 @@ def driver(args):
     if not args.dry_run:
         generate_requirements_file(save_path, final_imports)
     else:
+        logging.info(f"dry run: requirements.txt that would be generated at {save_path}:")
         for package, (symbol, version) in sorted(final_imports.items()):
             if symbol and version:
                 logging.info(f"\t{package}{symbol}{version}")
