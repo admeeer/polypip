@@ -2,8 +2,8 @@
 name = "polypip"
 version = "0.1.0"
 authors = [
-    { name="Alexander Crayton", email="" },
-    { name="Parker Spaan", email="" },1
+    { name="Alexander Crayton", email="alexppeltier@gmail.com"},
+    { name="Parker Spaan", email="parkerspaan@yahoo.com"},
 ]
 repository="https://github.com/admeeer/polypip"
 description=""
