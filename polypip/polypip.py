@@ -3,6 +3,7 @@ import os
 import re
 import ast
 import logging
+import pkg_resources
 
 def get_imports_from_file(path): # parse imports from a python script file using ast
     with open(path, 'r', encoding='utf-8') as file:
@@ -32,7 +33,8 @@ def generate_requirements_file(path, imports):
                 req_file.write(f"{package}\n")
 
 def _get_standard_libraries():
-    with open("polypip/stdlib", "r") as f:
+    stdlib_path = pkg_resources.resource_filename(__name__, 'stdlib')
+    with open(stdlib_path, "r") as f:
         stdlibs = {line.strip() for line in f}
     return stdlibs
 
