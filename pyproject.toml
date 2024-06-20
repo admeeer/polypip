@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "polypip"
 description="A lightweight python module designed to generate a requirements file for your project."
-version = "0.0.5"
+version = "0.0.9"
 authors = [
     { name="Alexander Crayton", email="alexppeltier@gmail.com"},
     { name="Parker Spaan", email="parkerspaan@yahoo.com"},
