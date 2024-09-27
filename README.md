@@ -15,7 +15,7 @@ arguments:
     <path>                path to the directory or file to scan for imports
 
 options:
-    --refererence, --r <path>   path to a requirements.txt file to reference versions from
+    --reference, --r <path>   path to a requirements.txt file to reference versions from
     --overwrite, --o            overwrite requirements.txt file if it already exists
     --shallow, --s              do not search for imports recursively
     --dry-run                   preview the requirements.txt that would be generated
