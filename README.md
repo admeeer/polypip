@@ -1,6 +1,10 @@
 # polypip
 A lightweight python module of command line tools to generate a requirements.txt file from your project based on python source file imports.
 
+```
+pip install polypip
+```
+
 ## usage
 
 ```
